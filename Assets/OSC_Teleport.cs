@@ -1,6 +1,8 @@
 using UnityEngine;
 using SharpOSC;
 using TMPro;
+using System.Collections.Generic;
+
 public class OSC_Teleport : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -8,10 +10,9 @@ public class OSC_Teleport : MonoBehaviour
     public int port = 8000;
     private UDPSender oscSender;
     public TextMeshProUGUI inputIp;
-    public GameObject ipPage;
-    public GameObject teleportPage;
-    [SerializeField] Vector3[] positions, rotations;
-    int heightDisaplcement;
+    public GameObject ipPage, teleportPage, typeSelectionPage;
+    [SerializeField] List<Villa> villas;
+    int villaIndex = 0;
 
     void Start()
     {
@@ -21,7 +22,7 @@ public class OSC_Teleport : MonoBehaviour
 
     public void Teleport(int num)
     {
-        SendTeleportMessage(positions[num], rotations[num]);
+        SendTeleportMessage(villas[villaIndex].positions[num], villas[villaIndex].rotations[num]);
     }
 
     public void SendTeleportMessage(Vector3 position, Vector3 rotation)
@@ -39,10 +40,34 @@ public class OSC_Teleport : MonoBehaviour
     public void SubmitIP()
     {
         ipAddress = inputIp.text.Trim().Replace("\u200B", "").Replace("\u00A0", "");
-        ipPage.SetActive(false);
-        teleportPage.SetActive(true);
         Debug.Log("ip  " + ipAddress);
-        oscSender = new UDPSender(ipAddress, port);
+        try
+        {
+            oscSender = new UDPSender(ipAddress, port);            
+        }
+        catch
+        {
+            Debug.Log("connection error");
+            return;
+        }
+        ipPage.SetActive(false);
+        typeSelectionPage.SetActive(true);
     }
 
+    public void SelectVilla(int index)
+    {
+        Debug.Log("sel  " + index);
+        villaIndex = index;
+        typeSelectionPage.SetActive(false);
+        teleportPage.SetActive(true);
+    }
+
+}
+
+[System.Serializable]
+public class Villa
+{
+    public int index;
+    public List<Vector3> positions;
+    public List<Vector3> rotations;
 }
